@@ -93,8 +93,46 @@ Stage A / Chamber 4에서 압력과 슬러리 유량의 Low·Mid·High 조합으
 
 Python, pandas, NumPy, scikit-learn, Random Forest, joblib, Matplotlib, Seaborn
 
-## 8. 저장소 정리 상태
+## 8. 파일 안내와 실행 조건
 
-현재는 프로젝트 소개를 먼저 정리한 상태입니다. 분석 노트북·예측 스크립트·결과 그래프·실행 환경은 원본 확인 후 순차적으로 추가할 예정입니다.
+| 파일 | 역할 |
+|---|---|
+| [분석 노트북](notebooks/01_data_check.ipynb) | 탐색·모델 비교·검증·가상 조건 분석 코드 |
+| [predict_cmp.py](predict_cmp.py) | CSV 폴더 단위 예측 |
+| [watch_cmp.py](watch_cmp.py) | 신규 배치 감시 및 자동 처리 |
+| [그룹별 성능표](results/external_group_performance.csv) | 저장된 검증 성능 |
+| [환경 기록](docs/environment.md) | 원본 환경과 재현 범위 |
 
-이 문서의 수치는 보존된 프로젝트 기록과 저장 결과에 근거합니다. 이번 저장소 정리 과정에서 전체 모델을 재학습하거나 자동화 프로그램을 다시 실행한 것은 아닙니다.
+노트북은 시행착오를 포함한 분석 기록입니다. 코드 셀은 보존하고, 출력과 실행 번호·셀 메타데이터는 배포용 사본에서 제거했습니다. 오류·중복 셀이 남아 있어 처음부터 전체 실행하는 완성된 학습 스크립트는 아닙니다. 원본 코드와 CSV의 “웨이퍼 수” 표기는 ID × Stage 표본 수로 읽어야 합니다.
+
+원시 데이터·학습된 joblib 모델·로컬 실행 로그·가상환경은 포함하지 않았습니다. 따라서 저장소를 내려받는 것만으로 바로 예측할 수는 없습니다. 원시 데이터의 출처와 재배포 조건은 별도 확인이 필요합니다.
+
+기존 학습 모델 두 개를 아래 위치에 준비한 경우, 저장소 루트에서 배치 예측을 실행합니다.
+
+```text
+results/models/cmp_removal_rate_model.joblib
+results/models/cmp_feature_columns.joblib
+```
+
+```bash
+python predict_cmp.py <Raw_CSV_폴더> <결과_CSV_경로>
+python watch_cmp.py
+```
+
+감시 프로그램은 `incoming_raw/<배치명>/`의 CSV를 처리합니다. `COMPLETED.txt`가 있는 배치는 건너뛰며 종료는 Ctrl+C입니다. 모델 파일과 호환되는 라이브러리 환경이 필요합니다.
+
+## 9. 결과 그래프
+
+### 실제값과 예측값
+
+점이 빨간 대각선에 가까울수록 예측 오차가 작습니다. 각 점은 ID × Stage 표본입니다.
+
+![실제 제거율과 예측 제거율 비교](results/external_validation.png)
+
+### 공정 그룹별 절대오차
+
+평균 성능뿐 아니라 그룹별 분포와 큰 오차 표본을 함께 확인했습니다.
+
+![공정 그룹별 절대오차](results/external_error_by_group.png)
+
+수치와 그래프는 원본의 저장 결과에 근거합니다. 이번 정리에서 전체 모델 재학습이나 감시 프로그램 재실행은 수행하지 않았습니다.
